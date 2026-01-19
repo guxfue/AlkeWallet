@@ -254,6 +254,82 @@ $(document).ready(function () {
             }, 1500);
         }
     }
+// SECCIÓN DE DEPOSIT: Se ejecuta si la página actual es deposit.html
+    if (window.location.pathname.endsWith('deposit.html')) {
+
+        if (!loggedIn) {
+            window.location.href = 'login.html';
+            return;
+        }
+
+        // Mostrar saldo actual con animación
+        animateBalance($('#depositCurrentBalance'), balance);
+
+        // Animación de entrada
+        $('.container').hide().fadeIn(600);
+
+        // Validación en tiempo real con efecto visual
+        $('#depositAmount').on('input', function () {
+            const valor = parseFloat($(this).val());
+            const btn = $('#btnDoDeposit');
+
+            if (valor > 0) {
+                $(this).removeClass('is-invalid').addClass('is-valid');
+                btn.prop('disabled', false).fadeIn(300);
+            } else {
+                $(this).removeClass('is-valid').addClass('is-invalid');
+                btn.prop('disabled', true).fadeOut(200);
+            }
+        });
+
+        // Maneja el clic en el botón de depósito
+        $('#btnDoDeposit').click(function () {
+            const monto = parseFloat($('#depositAmount').val());
+
+            if (isNaN(monto) || monto <= 0) {
+                showMessage('depositMessage', '⚠ Por favor ingresa un monto válido mayor a $0', 'error');
+                $('#depositAmount').addClass('is-invalid');
+                return;
+            }
+
+            // Mostrar loading
+            showLoading('#btnDoDeposit', 'Realizar Depósito');
+
+            // Simular procesamiento
+            setTimeout(function () {
+                const balanceAnterior = balance;
+                balance += monto;
+
+                // Registrar transacción
+                const fecha = new Date().toLocaleString('es-CL');
+                transactions.push({
+                    tipo: 'Depósito',
+                    monto: monto,
+                    fecha: fecha,
+                    detalle: 'Depósito realizado'
+                });
+
+                guardarDatos();
+
+                // Animar nuevo saldo
+                animateBalance($('#depositCurrentBalance'), balance);
+
+                // Mostrar mensaje de éxito
+                showMessage('depositMessage',
+                    `✓ ¡Depósito exitoso! Se agregaron $${monto.toFixed(2)} a tu cuenta`,
+                    'success');
+
+                // Limpiar formulario con efecto
+                $('#depositAmount').val('').removeClass('is-valid');
+
+                hideLoading('#btnDoDeposit');
+
+                // Scroll al mensaje
+                scrollToElement('#depositMessage');
+
+            }, 1200);
+        });
+    }
 
     
     
