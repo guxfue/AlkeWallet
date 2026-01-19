@@ -205,7 +205,56 @@ $(document).ready(function () {
         });
     }
 
-    
+    // SECCIÓN DE MENU: Se ejecuta si la página actual es menu.html
+    if (window.location.pathname.endsWith('menu.html')) {
+
+        // Verificar autenticación
+        if (!loggedIn) {
+            window.location.href = 'login.html';
+            return;
+        }
+
+        // Animación de entrada del menú
+        $('h2').hide().slideDown(600);
+        $('h3').hide().delay(300).fadeIn(600);
+
+        // Animar saldo
+        animateBalance($('#currentBalance'), balance);
+
+        // Animar botones con delay progresivo
+        $('.btn').hide().each(function (index) {
+            $(this).delay(200 * index).fadeIn(400);
+        });
+
+        // Navegación a Depositar
+        $('#btnDeposit').click(function () {
+            $('body').fadeOut(300, function () {
+                window.location.href = 'deposit.html';
+            });
+        });
+
+        // Navegación a Enviar Dinero
+        $('#btnSendMoney').click(function () {
+            $('body').fadeOut(300, function () {
+                window.location.href = 'sendmoney.html';
+            });
+        });
+
+        // Navegación a Transacciones
+        $('#btnTransactions').click(function () {
+            $('body').fadeOut(300, function () {
+                window.location.href = 'transaction.html';
+            });
+        });
+
+        // Efecto pulso en botón de depósito si el saldo es bajo
+        if (balance < 500) {
+            setTimeout(function () {
+                $('#btnDeposit').addClass('pulse-animation');
+            }, 1500);
+        }
+    }
+
     
     
     
