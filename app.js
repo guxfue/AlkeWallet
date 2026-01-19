@@ -331,18 +331,205 @@ $(document).ready(function () {
         });
     }
 
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    })        
+    // SECCIÓN DE SENDMONEY: Se ejecuta si la página actual es sendmoney.html
+    if (window.location.pathname.endsWith('sendmoney.html')) {
+
+        if (!loggedIn) {
+            window.location.href = 'login.html';
+            return;
+        }
+
+        // Mostrar saldo con animación
+        animateBalance($('#sendCurrentBalance'), balance);
+
+        // Animación de entrada
+        $('.container').hide().fadeIn(600);
+
+        // Ocultar formulario de nuevo contacto inicialmente
+        $('#newContactBox').hide();
+
+        // Rellenar el datalist con contactos guardados
+        $('#datalistOptions').empty();
+        contacts.forEach(function (c) {
+            $('#datalistOptions').append(
+                '<option value="' + c.nombre + ' - ' + c.alias + '"></option>'
+            );
+        });
+
+        // Mostrar formulario de nuevo contacto con slideDown
+        $('#btnAddContact').click(function () {
+            $('#newContactBox').slideDown(400);
+            $(this).fadeOut(300);
+            $('#btnSendMoneyConfirm').fadeOut(300);
+        });
+
+        // Cancelar creación de contacto
+        $('#btnCancelContact').click(function () {
+            $('#newContactBox').slideUp(400, function () {
+                // Limpiar campos
+                $('#contactName, #contactAccount, #contactAlias, #contactBank').val('');
+                $('#btnAddContact').fadeIn(300);
+                $('#btnSendMoneyConfirm').fadeIn(300);
+            });
+        });
+
+        // Guardar nuevo contacto
+        $('#btnSaveContact').click(function () {
+            const nombre = $('#contactName').val().trim();
+            const cuenta = $('#contactAccount').val().trim();
+            const alias = $('#contactAlias').val().trim();
+            const banco = $('#contactBank').val().trim();
+
+            if (!nombre || !cuenta || !alias || !banco) {
+                showMessage('sendMessage', '⚠ Por favor completa todos los campos del contacto', 'error');
+                return;
+            }
+
+            // Mostrar loading
+            showLoading('#btnSaveContact', 'Guardar contacto');
+
+            setTimeout(function () {
+                // Agregar contacto
+                contacts.push({ nombre, cuenta, alias, banco });
+                guardarDatos();
+
+                // Actualizar datalist
+                $('#datalistOptions').append(
+                    '<option value="' + nombre + ' - ' + alias + '"></option>'
+                );
+
+                // Mostrar mensaje
+                showMessage('sendMessage', `✓ Contacto "${nombre}" agregado exitosamente`, 'success');
+
+                // Limpiar y ocultar formulario
+                $('#contactName, #contactAccount, #contactAlias, #contactBank').val('');
+                $('#newContactBox').slideUp(400, function () {
+                    $('#btnAddContact').fadeIn(300);
+                    $('#btnSendMoneyConfirm').fadeIn(300);
+                });
+
+                hideLoading('#btnSaveContact');
+
+            }, 800);
+        });
+
+        // Enviar dinero con validación y efectos
+        $('#btnSendMoneyConfirm').click(function () {
+            const selectedContact = $('#exampleDataList').val().trim();
+
+            if (!selectedContact) {
+                showMessage('sendMessage', '⚠ Debes seleccionar un contacto', 'error');
+                $('#exampleDataList').addClass('is-invalid');
+                return;
+            }
+
+            const monto = parseFloat(prompt('Ingrese el monto a transferir:'));
+
+            if (isNaN(monto) || monto <= 0) {
+                showMessage('sendMessage', '⚠ Monto inválido', 'error');
+                return;
+            }
+
+            if (monto > balance) {
+                showMessage('sendMessage', '⚠ Saldo insuficiente', 'error');
+                return;
+            }
+
+            // Mostrar loading
+            showLoading('#btnSendMoneyConfirm', 'Enviar dinero');
+
+            setTimeout(function () {
+                balance -= monto;
+
+                const fecha = new Date().toLocaleString('es-CL');
+                transactions.push({
+                    tipo: 'Transferencia',
+                    monto: -monto,
+                    fecha: fecha,
+                    detalle: 'Enviado a ' + selectedContact
+                });
+
+                guardarDatos();
+
+                // Actualizar saldo con animación
+                animateBalance($('#sendCurrentBalance'), balance);
+
+                showMessage('sendMessage',
+                    `✓ Transferencia de $${monto.toFixed(2)} enviada exitosamente a ${selectedContact}`,
+                    'success');
+
+                $('#exampleDataList').val('').removeClass('is-invalid');
+
+                hideLoading('#btnSendMoneyConfirm');
+                scrollToElement('#sendMessage');
+
+            }, 1500);
+        });
+    }
+
+
+    // SECCIÓN DE TRANSACCIONES: Se ejecuta si la página actual es transaction.html
+    if (window.location.pathname.endsWith('transaction.html')) {
+        // Verifica si el usuario no está autenticado
+        if (!loggedIn) {
+            // Redirige a la página de login si no está autenticado
+            window.location.href = 'login.html';
+        } else {
+            // CREACIÓN DE FILTRO PARA LAS TRANSACCIONES
+            // Inserta el filtro debajo del título h2 de la página
+            $('.container h2').after(`
+        <div class="row mb-4 mt-3">
+        <div class="col-md-4">
+            <select id="filtroTipo" class="form-select">
+            <option value="">Todos</option>
+            <option value="Depósito">Depósitos</option>
+            <option value="Envío">Envíos</option>
+            </select>
+        </div>
+        </div>
+    `);
+
+            // Asigna un id al tbody de la tabla para identificarlo fácilmente y lo vacía
+            $('.table tbody').attr('id', 'transactionsTableBody').empty();
+
+            // FUNCIÓN PARA MOSTRAR MOVIMIENTOS CON FILTRO
+            function mostrarMovimientos(filtro) {
+                // Obtiene la referencia al tbody de la tabla
+                const tbody = $('#transactionsTableBody');
+                // Limpia el contenido actual de la tabla
+                tbody.empty();
+
+                // Si no hay transacciones, muestra un mensaje
+                if (transactions.length === 0) {
+                    // Agrega una fila con mensaje de "No hay movimientos"
+                    tbody.html('<tr><td colspan="4" class="text-center py-4">No hay movimientos aún</td></tr>');
+                    return;
+                }
+
+                // Itera sobre cada transacción
+                transactions.forEach(function (tx) {
+                    // Si el filtro está vacío o coincide con el tipo de transacción
+                    if (!filtro || tx.tipo === filtro) {
+                        // Agrega una fila a la tabla con los datos de la transacción
+                        tbody.append(`
+            <tr>
+                <td>${tx.detalle}</td>
+                <td>${tx.monto.toFixed(2)}</td>
+                <td>${tx.fecha}</td>
+                <td>${tx.tipo}</td>
+            </tr>
+            `);
+                    }
+                });
+            }
+
+            // Muestra todos los movimientos al cargar la página
+            mostrarMovimientos();
+            // EVENTO PARA CAMBIAR EL FILTRO
+            $('#filtroTipo').change(function () {
+                // Muestra los movimientos filtrados según la opción seleccionada
+                mostrarMovimientos($(this).val());
+            });
+        }
+    }
+})        
