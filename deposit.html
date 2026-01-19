@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!--
+        deposit.html - Página para ingresar un monto y realizar un depósito.
+        `depositAmount` y `btnDoDeposit` son usados por app.js para procesar la operación.
+    -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Depositos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link rel="stylesheet" href="style.css">
+</head>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+    crossorigin="anonymous"></script>
+
+
+<body>
+    <div class="container">
+        <h2>Depositar</h2>
+        <h3>Ingrese monto a depositar: </h3>
+        <!-- Input `depositAmount`: valor numérico enviado a app.js -->
+        <div class="input-group mb-3">
+            <span class="input-group-text">$</span>
+            <input type="number" class="form-control" id="depositAmount" min="1" step="0.01">
+        </div>
+        <div class="container">
+            <button id="btnDoDeposit" class="btn btn-primary">Realizar Depósito</button>
+        </div>
+        <p id="depositMessage" class="mt-2"></p>
+
+        <div class="containter">
+            <a href="menu.html" class="btn btn-primary" tabindex="-1" role="button">Volver al Menu</a>
+        </div>
+        <p>Saldo actual: <span id="depositCurrentBalance"></span></p>
+        <p id="depositMessage"></p>
+
+    </div>
+<!-- Carga jQueury -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>
