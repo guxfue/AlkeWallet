@@ -160,6 +160,51 @@ $(document).ready(function () {
         localStorage.setItem('transactions', txStr);
         }
 
+        // SECCIÓN DE LOGIN: Se ejecuta si la página actual es login.html
+    if (window.location.pathname.endsWith('login.html')) {
+
+        // Animación de entrada del formulario
+        $('.container').hide().fadeIn(800);
+
+        // Maneja el envío del formulario de login
+        $('#loginForm').submit(function (e) {
+            e.preventDefault();
+
+            const email = $('#exampleInputEmail1').val();
+            const pass = $('#exampleInputPassword1').val();
+            const msg = $('#loginMessage');
+
+            // Mostrar efecto de carga
+            showLoading('#loginForm button[type="submit"]', 'Inicia Sesión');
+
+            // Simular verificación (con delay para mostrar el loading)
+            setTimeout(function () {
+                if (email === 'user@test.com' && pass === '1234') {
+                    showMessage('loginMessage', '✓ Inicio de sesión exitoso. Redirigiendo...', 'success');
+
+                    loggedIn = true;
+                    guardarDatos();
+
+                    // Redirigir con efecto
+                    setTimeout(function () {
+                        $('body').fadeOut(400, function () {
+                            window.location.href = 'menu.html';
+                        });
+                    }, 1500);
+                } else {
+                    hideLoading('#loginForm button[type="submit"]');
+                    showMessage('loginMessage', '✗ Credenciales incorrectas. Intenta nuevamente.', 'error');
+
+                    // Efecto de shake en el formulario
+                    $('#loginForm').addClass('shake');
+                    setTimeout(function () {
+                        $('#loginForm').removeClass('shake');
+                    }, 500);
+                }
+            }, 1000);
+        });
+    }
+
     
     
     
